@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>テトリス</title>
+  <link rel="stylesheet" href="src/styles/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1 class="title">テトリス</h1>
+      <div class="header-controls">
+        <button id="settings-btn" class="btn btn-secondary">設定</button>
+        <button id="help-btn" class="btn btn-secondary">ヘルプ</button>
+      </div>
+    </header>
+    
+    <main class="game-container">
+      <canvas id="game-canvas" class="game-canvas"></canvas>
+      
+      <div class="game-ui" id="game-ui">
+        <div class="start-screen" id="start-screen">
+          <h2>テトリス</h2>
+          <p>矢印キーで操作、スペースでハードドロップ</p>
+          <button id="start-btn" class="btn btn-primary">ゲーム開始</button>
+        </div>
+        
+        <div class="game-controls" id="game-controls" style="display: none;">
+          <div class="control-buttons">
+            <button id="pause-btn" class="btn btn-secondary">ポーズ</button>
+            <button id="restart-btn" class="btn btn-secondary">リスタート</button>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>設定</h3>
+          <button id="modal-close" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="settings-tabs">
+            <button class="tab-btn active" data-tab="controls">操作</button>
+            <button class="tab-btn" data-tab="display">画面</button>
+            <button class="tab-btn" data-tab="audio">オーディオ</button>
+          </div>
+          
+          <div class="tab-content">
+            <!-- Controls Tab -->
+            <div id="controls-tab" class="tab-pane active">
+              <div class="setting-group">
+                <label>DAS (ms): <span id="das-value">150</span></label>
+                <input type="range" id="das-slider" min="100" max="250" value="150">
+              </div>
+              <div class="setting-group">
+                <label>ARR (ms): <span id="arr-value">20</span></label>
+                <input type="range" id="arr-slider" min="0" max="50" value="20">
+              </div>
+              <div class="setting-group">
+                <label>ソフトドロップ (%): <span id="sd-value">20</span></label>
+                <input type="range" id="sd-slider" min="10" max="100" value="20">
+              </div>
+            </div>
+            
+            <!-- Display Tab -->
+            <div id="display-tab" class="tab-pane">
+              <div class="setting-group">
+                <label>
+                  <input type="checkbox" id="ghost-toggle" checked>
+                  ゴースト表示
+                </label>
+              </div>
+              <div class="setting-group">
+                <label>
+                  <input type="checkbox" id="grid-toggle" checked>
+                  グリッド表示
+                </label>
+              </div>
+              <div class="setting-group">
+                <label>テーマ:</label>
+                <select id="theme-select">
+                  <option value="default">デフォルト</option>
+                  <option value="high">ハイコントラスト</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Audio Tab -->
+            <div id="audio-tab" class="tab-pane">
+              <div class="setting-group">
+                <label>BGM音量: <span id="bgm-value">60</span>%</label>
+                <input type="range" id="bgm-slider" min="0" max="100" value="60">
+              </div>
+              <div class="setting-group">
+                <label>SE音量: <span id="se-value">60</span>%</label>
+                <input type="range" id="se-slider" min="0" max="100" value="60">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button id="settings-apply" class="btn btn-primary">適用</button>
+          <button id="settings-cancel" class="btn btn-secondary">キャンセル</button>
+          <button id="settings-reset" class="btn btn-danger">デフォルトに戻す</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>ヘルプ</h3>
+          <button class="close-btn" onclick="document.getElementById('help-modal').style.display='none'">&times;</button>
+        </div>
+        <div class="modal-body">
+          <h4>操作方法</h4>
+          <ul>
+            <li>← → : 左右移動</li>
+            <li>↓ : ソフトドロップ</li>
+            <li>スペース / ↑ : ハードドロップ</li>
+            <li>Z : 反時計回り回転</li>
+            <li>X / ↑ : 時計回り回転</li>
+            <li>C : ホールド</li>
+            <li>ESC : ポーズ</li>
+          </ul>
+          
+          <h4>ゲームルール</h4>
+          <p>テトリミノを操作して、横一列を埋めてラインを消去します。</p>
+          <p>10行消去するごとにレベルが上がり、落下速度が速くなります。</p>
+          <p>テトリミノが一番上まで積み上がるとゲームオーバーです。</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+  </div>
+  
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
