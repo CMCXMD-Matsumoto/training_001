@@ -1,0 +1,61 @@
+# Linux 上の Python Webアプリ構成を Azure App Serviceにビルドする構成
+# 参考資料: https://learn.microsoft.com/ja-jp/azure/app-service/deploy-best-practices#use-github-actions
+name: Linux上のWebアプリとしてPython uvプロジェクトをデプロイ
+on:
+  [push]
+# CONFIGURATION
+# For help, go to https://github.com/Azure/Actions
+# See this in-depth article on CI for Python applications: https://azure.github.io/AppService/2020/12/11/cicd-for-python-apps.html
+#
+# 1. Set up the following secrets in your repository:
+#   AZURE_CREDENTIALS_GITHUB_SECRET
+#
+# 2. Change these variables for your configuration:
+env:
+  AZURE_WEBAPP_NAME: Tetris-MatsumotoVer     # アプリケーション名を設定
+  WORKING_DIRECTORY: '.'        # これをgithubリポジトリ内の作業ディレクトリのパスに設定します。デフォルトはリポジトリのルートです。
+  PYTHON_VERSION: '3.11'        # 使用するPythonのバージョンを設定
+  # サーバーを起動するために必要な起動コマンドを設定します。デフォルトでは空です。
+  # このアプリケーションではStreamlit構成を想定しています
+  STARTUP_COMMAND: '. antenv/bin/activate && python -m streamlit run dashboard_app.py --browser.serverAddress "0.0.0.0" --server.port $PORT --server.enableCORS=false'
+
+jobs:
+ build-and-deploy:
+  runs-on: ubuntu-latest
+  environment: dev
+  steps:
+  # リポジトリのチェックアウト
+  - uses: actions/checkout@v5
+  # UVセットアップ
+  - name: Install uv
+    uses: astral-sh/setup-uv@v7
+  # ビルド用Pythonのセットアップ (uv環境より)
+  - name: Set up Python
+    run: uv python install ${{ env.PYTHON_VERSION }}
+  # パッケージ(依存関係)インストール
+  - name: python install
+    working-directory: ${{ env.WORKING_DIRECTORY }}
+    run: |
+      uv venv antenv && \
+      source antenv/bin/activate && \
+      uv sync --locked --active
+  # Azureにログイン
+  - uses: azure/login@v2
+    with:
+     creds: ${{ secrets.AZURE_CREDENTIALS_GITHUB_SECRET }}
+  # デプロイ先の追加設定
+  - uses: azure/appservice-settings@v1
+    with:
+     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+     mask-inputs: false
+     general-settings-json: '{"linuxFxVersion": "PYTHON|${{ env.PYTHON_VERSION }}"}' #'General configuration settings as Key Value pairs'
+  # アプリケーションのデプロイ
+  - uses: azure/webapps-deploy@v2
+    with:
+     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+     package: ${{ env.WORKING_DIRECTORY }}
+     startup-command: ${{ env.STARTUP_COMMAND }}
+  # Azureからログアウト
+  - name: logout
+    run: |
+     az logout
